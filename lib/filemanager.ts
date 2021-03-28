@@ -1,5 +1,5 @@
 import { TFile, Vault } from 'obsidian'
-import { S3Client, ListObjectsV2Command, _Object, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3"
+import { S3Client, ListObjectsV2Command, _Object, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, ListObjectsV2CommandOutput } from "@aws-sdk/client-s3"
 import { AwsProfile } from './aws'
 import * as path from 'path'
 import * as crypto from 'crypto'
@@ -107,7 +107,7 @@ export class RemoteFile extends File {
       await this.fileManager.vault.modify(localFile.file, await this.getContent())
     } else {
       const file = await this.fileManager.vault.create(this.path, await this.getContent())
-      new LocalFile(this.fileManager, file)
+      localFile = new LocalFile(this.fileManager, file)
     }
 
     return localFile
@@ -176,17 +176,30 @@ export class FileManager {
 
   async loadRemoteFiles(): Promise<RemoteFile[]> {
     const s3 = this.getS3Client()
-    const res = await s3.send(new ListObjectsV2Command({
-      Bucket: this.bucketOpt.bucketName,
-      Prefix: this.bucketOpt.pathPrefix
-    }))
+    let contents: _Object[] = [];
 
-    if (!res.Contents) {
-      this.remoteFiles = []
-      return this.remoteFiles
-    }
+    let continuationToken = undefined
+    let maxPages = 10
+    do {
+      const res: ListObjectsV2CommandOutput = await s3.send(new ListObjectsV2Command({
+        Bucket: this.bucketOpt.bucketName,
+        Prefix: this.bucketOpt.pathPrefix,
+        MaxKeys: 500,
+        ContinuationToken: continuationToken
+      }))
 
-    this.remoteFiles = res.Contents.map(content => new RemoteFile(this, content))
+      maxPages--
+  
+      if (!res.Contents) {
+        break
+      }
+
+      contents = contents.concat(res.Contents)
+      continuationToken = res.NextContinuationToken
+      
+    } while (continuationToken != undefined && maxPages > 0)
+
+    this.remoteFiles = contents.map(content => new RemoteFile(this, content))
     return this.remoteFiles
   }
 

@@ -37,7 +37,7 @@ const DEFAULT_SETTINGS: AwsSyncPluginSettings = {
 	enableStatusBar: true,
 	enableNotifications: true,
 	enableAutoSync: false,
-	autoSyncDebounce: 5
+	autoSyncDebounce: 2
 }
 
 export default class AwsSyncPlugin extends Plugin {
@@ -461,6 +461,7 @@ class SampleSettingTab extends PluginSettingTab {
 			.addDropdown(dropdown => dropdown
 				.addOptions({
 					'0': "disabled",
+					'2': "2 seconds",
 					'5': "5 seconds",
 					'10': "10 seconds",
 					'30': "30 seconds",

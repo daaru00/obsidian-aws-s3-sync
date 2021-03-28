@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import * as os from 'os'
-import * as childProcess from "child_process"
 import { fromIni }  from "@aws-sdk/credential-provider-ini"
 import { Credentials, Provider } from "@aws-sdk/types"
 
@@ -85,36 +84,6 @@ export class AwsCredentials {
   getProfileByName(name: string): AwsProfile|undefined {
     return this.profiles.find(profile => {
       return profile.name === name
-    })
-  }
-}
-
-export class AwsCli {
-  profile: AwsProfile
-  
-  setProfile(profile: AwsProfile) {
-    this.profile = profile
-  }
-
-  async executeCommand(args: string[]): Promise<string> {
-    args = ['--profile', this.profile.name].concat(args)
-
-    return new Promise((resolve, reject) => {
-      const command = childProcess.spawn('aws', args);
-
-      let data = ''
-      command.stdout.on('data', (chunk) => data += chunk)
-
-      let error = ''
-      command.stderr.on('data', (chunk) => error += chunk)
-  
-      command.on('close', (code) => {
-        if (code == 0) {
-          resolve(data)
-        } else {
-          reject(new Error(error))
-        }
-      });
     })
   }
 }
