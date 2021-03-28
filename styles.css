@@ -1,0 +1,7 @@
+/* Error message showed in settings page when no profiles are found */
+.aws-s3-no-profile{
+    text-align: center;
+    display: inherit;
+    color: var(--text-error);
+    margin-bottom: 0;
+}
