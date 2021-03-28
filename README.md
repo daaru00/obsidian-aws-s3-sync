@@ -1,56 +1,41 @@
-## Obsidian Sample Plugin
+# Obsidian AWS S3 Sync Plugin
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+This [Obsidian.md](https://obsidian.md/) plugin allow to evaluate synchronize the vault with a remote AWS S3 Bucket.
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+## Features
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+- Upload changed files to bucket
+- Delete trashed files from bucket
+- Download new files from bucket
+- Automatic synchronization
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Changes the default font color to red using `styles.css`.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+This plugin will load a list of remote files from bucket and local files from vault and elaborate sync changes:
 
-### First time developing plugins?
+![bottom status bar](./doc/imgs/status-bar.png)
 
-Quick starting guide for new plugin devs:
+## Requirements
 
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
+- The `.aws/credentials` file present in user home and a valid configured profile.
+- An S3 bucket.
 
-### Releasing new releases
+## Installation
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments.
-- Publish the release.
+Download zip archive from [GitHub releases page](https://github.com/daaru00/obsidian-aws-s3-sync/releases) and extract it into `<vault>/.obsidian/plugins` directory.
 
-### Adding your plugin to the community plugin list
+## Configurations
 
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+Configure the required credentials and bucket section (profiles name will be loaded from `~/.aws/credentials` file):
 
-### How to use
+![credentials settings](./doc/imgs/credentials.png)
 
-- Clone this repo.
-- `npm i` or `yarn` to install dependencies
-- `npm run dev` to start compilation in watch mode.
+Configure the sync behavior, the source (local or remote) will command which file will be create, updated or delete in the source:
 
-### Manually installing the plugin
+![behavior settings](./doc/imgs/behavior.png)
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+Enable the automatic synchronization to run sync process on vault files changes:
 
-### API Documentation
+![sync behavior settings](./doc/imgs/behavior.png)
 
-See https://github.com/obsidianmd/obsidian-api
+You can also change the notifications behavior, if automatic synchronization is enable maybe you don't need the notice notification:
+
+![notifications settings](./doc/imgs/notifications.png)

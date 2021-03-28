@@ -141,6 +141,7 @@ export interface SyncOptions {
 export interface BucketOption {
   bucketName: string
   pathPrefix: string
+  region: string
 }
 
 export class FileManager {
@@ -160,7 +161,8 @@ export class FileManager {
 
   getS3Client(): S3Client {
     return new S3Client({
-      credentials: this.profile.getCredentials()
+      credentials: this.profile.getCredentials(),
+      region: this.bucketOpt.region
     })
   }
 

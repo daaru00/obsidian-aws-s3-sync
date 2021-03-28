@@ -1,7 +1,7 @@
 import * as os from 'os'
 import * as path from 'path'
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian'
-import { AwsCredentials, AwsProfile } from './lib/aws'
+import { AwsCredentials, AwsProfile, REGIONS } from './lib/aws'
 import { FileManager, SyncStat, SyncDirection } from './lib/filemanager'
 
 const MESSAGE_PREFIX = 'AWS S3: '
@@ -18,6 +18,7 @@ enum PluginState {
 
 interface AwsSyncPluginSettings {
 	profile: string;
+	region: string;
 	bucketName: string;
 	bucketPathPrefix: string;
 	localFileProtection: boolean;
@@ -30,6 +31,7 @@ interface AwsSyncPluginSettings {
 
 const DEFAULT_SETTINGS: AwsSyncPluginSettings = {
 	profile: 'default',
+	region: 'us-east-1',
 	bucketName: '',
 	bucketPathPrefix: '/%VAULT_NAME%/',
 	localFileProtection: true,
@@ -98,7 +100,8 @@ export default class AwsSyncPlugin extends Plugin {
 
 		this.fileManager = new FileManager(this.app.vault, this.getConfiguredProfile(), {
 			bucketName: this.getConfiguredBucketName(), 
-			pathPrefix: this.getConfiguredBucketPathPrefix()
+			pathPrefix: this.getConfiguredBucketPathPrefix(),
+      region: this.settings.region
 		}, {
 			direction: SyncDirection.FROM_LOCAL,
 			localFileProtection: this.settings.localFileProtection  
@@ -362,6 +365,17 @@ class SampleSettingTab extends PluginSettingTab {
 		} else {
 			containerEl.createEl('p', {text: 'Cloud not find any AWS profiles!', cls: ['setting-item', 'aws-s3-no-profile']});
 		}
+
+    new Setting(containerEl)
+      .setName('AWS Region')
+      .setDesc('The region where S3 bucket was created')
+      .addDropdown(dropdown => dropdown
+        .addOptions(REGIONS)
+        .setValue(this.plugin.settings.region)
+        .onChange(async (value) => {
+          this.plugin.settings.region = value;
+          await this.plugin.saveSettings();
+        }));
 
 		new Setting(containerEl)
 			.setName('AWS S3 Bucket Name')
