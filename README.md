@@ -13,6 +13,10 @@ This plugin will load a list of remote files from bucket and local files from va
 
 ![bottom status bar](./doc/imgs/status-bar.png)
 
+Notifications will appear when sync process run:
+
+![notifications](./doc/imgs/notifications.png))
+
 ## Requirements
 
 - The `.aws/credentials` file present in user home and a valid configured profile.
@@ -26,16 +30,16 @@ Download zip archive from [GitHub releases page](https://github.com/daaru00/obsi
 
 Configure the required credentials and bucket section (profiles name will be loaded from `~/.aws/credentials` file):
 
-![credentials settings](./doc/imgs/credentials.png)
+![credentials settings](./doc/imgs/credentials-settings.png)
 
 Configure the sync behavior, the source (local or remote) will command which file will be create, updated or delete in the source:
 
-![behavior settings](./doc/imgs/behavior.png)
+![behavior settings](./doc/imgs/behavior-settings.png)
 
 Enable the automatic synchronization to run sync process on vault files changes:
 
-![sync behavior settings](./doc/imgs/behavior.png)
+![sync behavior settings](./doc/imgs/behavior-settings.png)
 
 You can also change the notifications behavior, if automatic synchronization is enable maybe you don't need the notice notification:
 
-![notifications settings](./doc/imgs/notifications.png)
+![notifications settings](./doc/imgs/notifications-settings.png)
