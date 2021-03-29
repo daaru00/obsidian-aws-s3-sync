@@ -222,17 +222,22 @@ export class FileManager {
 
     const filesToDelete = []
 
+    console.group('sync status '+direction)
+
     const filesToDownload = []
     for (const remoteFile of this.remoteFiles) {
       const localFile = this.findLocalFile(remoteFile.path)
       if (!localFile) {
         if (direction === SyncDirection.FROM_LOCAL) {
+          console.log('delete remote file', remoteFile.path, 'because does not exist and is from local');
           filesToDelete.push(remoteFile)
         } else {
+          console.log('download remote file', remoteFile.path, 'because does not exist and is from remote');
           filesToDownload.push(remoteFile)
         }
       } else if (localFile.md5hash !== remoteFile.md5hash && remoteFile.lastModified > localFile.lastModified) {
         filesToDownload.push(remoteFile)
+        console.log('download remote file', remoteFile.path, 'because modified and the remote one is more recent');
       }
     }
 
@@ -241,14 +246,19 @@ export class FileManager {
       const remoteFile = this.findRemoteFile(localFile.path)
       if (!remoteFile) {
         if (this.syncOpt.localFileProtection === false && this.syncOpt.direction === SyncDirection.FROM_REMOTE) {
+          console.log('delete local file', localFile.path, 'because does not exist and is from remote');
           filesToDelete.push(localFile)
         } else {
+          console.log('upload local file', localFile.path, 'because does not exist and is from local');
           filesToUpload.push(localFile)
         }
       } else if (remoteFile.md5hash !== localFile.md5hash && localFile.lastModified > remoteFile.lastModified) {
         filesToUpload.push(localFile)
+        console.log('upload local file', remoteFile.path, 'because modified and the local one is more recent');
       }
     }
+
+    console.groupEnd()
 
     return {
       filesToDownload,

@@ -22,7 +22,7 @@ interface AwsSyncPluginSettings {
 	bucketName: string;
 	bucketPathPrefix: string;
 	localFileProtection: boolean;
-	direction: SyncDirection;
+	syncDirection: SyncDirection;
 	enableStatusBar: boolean;
 	enableNotifications: boolean;
 	enableAutoSync: boolean;
@@ -35,7 +35,7 @@ const DEFAULT_SETTINGS: AwsSyncPluginSettings = {
 	bucketName: '',
 	bucketPathPrefix: '/%VAULT_NAME%/',
 	localFileProtection: true,
-	direction: SyncDirection.FROM_LOCAL,
+	syncDirection: SyncDirection.FROM_LOCAL,
 	enableStatusBar: true,
 	enableNotifications: true,
 	enableAutoSync: false,
@@ -103,7 +103,7 @@ export default class AwsSyncPlugin extends Plugin {
 			pathPrefix: this.getConfiguredBucketPathPrefix(),
       region: this.settings.region
 		}, {
-			direction: SyncDirection.FROM_LOCAL,
+			direction: this.settings.syncDirection,
 			localFileProtection: this.settings.localFileProtection  
 		})
 
@@ -422,20 +422,11 @@ class SampleSettingTab extends PluginSettingTab {
 			.setName('Synch direction')
 			.setDesc('Non existing files in destination will be deleted if not found in source')
 			.addDropdown(dropdown => dropdown
-				.addOptions({
-					'0': "from local to remote",
-					'1': "from remote to local",
-				})
-				.setValue(this.plugin.settings.direction.toString())
+        .addOption(SyncDirection.FROM_LOCAL.toString(), "from local to remote")
+        .addOption(SyncDirection.FROM_REMOTE.toString(), "from remote to local")
+				.setValue(this.plugin.settings.syncDirection.toString())
 				.onChange(async (value) => {
-					switch (value) {
-						case SyncDirection.FROM_LOCAL.toString():
-							this.plugin.settings.direction = SyncDirection.FROM_LOCAL;
-							break;
-						case SyncDirection.FROM_REMOTE.toString():
-							this.plugin.settings.direction = SyncDirection.FROM_REMOTE;
-							break;
-					}
+          this.plugin.settings.syncDirection = parseInt(value)
 					await this.plugin.saveSettings();
 				}));
 
