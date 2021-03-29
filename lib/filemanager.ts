@@ -36,23 +36,34 @@ export class LocalFile extends File {
   async calculateMd5() {
     const md5hash = crypto.createHash('md5');
     const content = await this.getContent()
+    if (content == null) {
+      return
+    }
     md5hash.update(Buffer.from(content, 'utf8'));
     this.md5hash = md5hash.digest('hex')
   }
 
-  async getContent(): Promise<string> {
-    const content = await this.fileManager.vault.read(this.file)
-    return content.toString()
+  async getContent(): Promise<string|null> {
+    try {
+      const content = await this.fileManager.vault.read(this.file)
+      return content.toString()
+    } catch(err) {
+      return null
+    }
   }
 
   async upload(): Promise<RemoteFile> {
-    const s3 = this.fileManager.getS3Client()
+    const content = await this.getContent()
+    if (content === null) {
+      return
+    }
 
+    const s3 = this.fileManager.getS3Client()
     const uploadPath = path.join(this.fileManager.bucketOpt.pathPrefix, this.path)
     const res = await s3.send(new PutObjectCommand({
       Bucket: this.fileManager.bucketOpt.bucketName,
       Key: uploadPath,
-      Body: (await this.getContent()).toString(),
+      Body: content,
       ContentMD5: Buffer.from(this.md5hash, 'hex').toString('base64')
     }))
 
@@ -106,6 +117,14 @@ export class RemoteFile extends File {
     if (localFile) {
       await this.fileManager.vault.modify(localFile.file, await this.getContent())
     } else {
+      try {
+        await this.fileManager.vault.createFolder(path.dirname(this.path))
+      } catch (error) {
+        console.log(error);
+        
+        // raise an error is directory already exist
+        // cannot find a method to check the directory existence
+      }
       const file = await this.fileManager.vault.create(this.path, await this.getContent())
       localFile = new LocalFile(this.fileManager, file)
     }
@@ -222,22 +241,17 @@ export class FileManager {
 
     const filesToDelete = []
 
-    console.group('sync status '+direction)
-
     const filesToDownload = []
     for (const remoteFile of this.remoteFiles) {
       const localFile = this.findLocalFile(remoteFile.path)
       if (!localFile) {
         if (direction === SyncDirection.FROM_LOCAL) {
-          console.log('delete remote file', remoteFile.path, 'because does not exist and is from local');
           filesToDelete.push(remoteFile)
         } else {
-          console.log('download remote file', remoteFile.path, 'because does not exist and is from remote');
           filesToDownload.push(remoteFile)
         }
       } else if (localFile.md5hash !== remoteFile.md5hash && remoteFile.lastModified > localFile.lastModified) {
         filesToDownload.push(remoteFile)
-        console.log('download remote file', remoteFile.path, 'because modified and the remote one is more recent');
       }
     }
 
@@ -246,19 +260,14 @@ export class FileManager {
       const remoteFile = this.findRemoteFile(localFile.path)
       if (!remoteFile) {
         if (this.syncOpt.localFileProtection === false && this.syncOpt.direction === SyncDirection.FROM_REMOTE) {
-          console.log('delete local file', localFile.path, 'because does not exist and is from remote');
           filesToDelete.push(localFile)
         } else {
-          console.log('upload local file', localFile.path, 'because does not exist and is from local');
           filesToUpload.push(localFile)
         }
       } else if (remoteFile.md5hash !== localFile.md5hash && localFile.lastModified > remoteFile.lastModified) {
         filesToUpload.push(localFile)
-        console.log('upload local file', remoteFile.path, 'because modified and the local one is more recent');
       }
     }
-
-    console.groupEnd()
 
     return {
       filesToDownload,

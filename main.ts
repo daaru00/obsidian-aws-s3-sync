@@ -130,6 +130,10 @@ export default class AwsSyncPlugin extends Plugin {
 		if (!this.fileManager) {
 			return
 		}
+
+		if (this.state === PluginState.SYNCHING) {
+			return
+		}
 		
 		if (this.settings.enableAutoSync && this.state === PluginState.READY) {
 			clearTimeout(this.autoSyncTimer)
