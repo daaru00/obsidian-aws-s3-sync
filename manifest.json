@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-aws-s3-sync",
 	"name": "AWS S3 Sync",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"minAppVersion": "0.11.9",
 	"description": "This plugin will synchronize the vault with an AWS s3 bucket",
 	"author": "Fabio Gollinucci",
