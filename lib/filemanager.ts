@@ -120,9 +120,7 @@ export class RemoteFile extends File {
       try {
         await this.fileManager.vault.createFolder(path.dirname(this.path))
       } catch (error) {
-        console.log(error);
-        
-        // raise an error is directory already exist
+        // this raise an error is directory already exist
         // cannot find a method to check the directory existence
       }
       const file = await this.fileManager.vault.create(this.path, await this.getContent())
