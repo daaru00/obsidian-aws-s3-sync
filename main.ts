@@ -10,9 +10,8 @@ enum PluginState {
 	LOADING,
 	READY,
 	TESTING,
-	UPLOADING,
-	DOWNLOADING,
 	SYNCHING,
+	CHECKING,
 	ERROR
 }
 
@@ -27,6 +26,8 @@ interface AwsSyncPluginSettings {
 	enableNotifications: boolean;
 	enableAutoSync: boolean;
 	autoSyncDebounce: number;
+  enableAutoPull: boolean;
+  autoPullInterval: number;
 }
 
 const DEFAULT_SETTINGS: AwsSyncPluginSettings = {
@@ -39,7 +40,9 @@ const DEFAULT_SETTINGS: AwsSyncPluginSettings = {
 	enableStatusBar: true,
 	enableNotifications: true,
 	enableAutoSync: false,
-	autoSyncDebounce: 2
+	autoSyncDebounce: 2,
+  enableAutoPull: false,
+  autoPullInterval: 300,
 }
 
 export default class AwsSyncPlugin extends Plugin {
@@ -50,6 +53,7 @@ export default class AwsSyncPlugin extends Plugin {
   state: PluginState;
 	syncStatus: SyncStat;
 	autoSyncTimer: any;
+  pullInterval: number
 
 	async onload() {
 		this.awsCredentials = new AwsCredentials(path.join(os.homedir(), '.aws', 'credentials'))
@@ -67,6 +71,12 @@ export default class AwsSyncPlugin extends Plugin {
 		this.app.vault.on('rename', this.onLocalFileChanged.bind(this))
 
 		await this.initFileManager()
+    
+		this.addCommand({
+			id: 'aws-s3-check',
+			name: 'Check synchronization status',
+			callback: this.runCheck.bind(this)
+		});
 
 		this.addCommand({
 			id: 'aws-s3-sync',
@@ -91,6 +101,10 @@ export default class AwsSyncPlugin extends Plugin {
 		});
 
 		this.setState(PluginState.READY)
+
+    if (this.settings.enableAutoPull) {
+      this.initAutoPull()
+    }
 	}
 
 	async initFileManager() {
@@ -136,13 +150,34 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 		
 		if (this.settings.enableAutoSync && this.state === PluginState.READY) {
-			clearTimeout(this.autoSyncTimer)
-			this.autoSyncTimer = setTimeout(async () => {
+			window.clearTimeout(this.autoSyncTimer)
+			this.autoSyncTimer = window.setTimeout(async () => {
 				await this.runSync()
 				this.updateStatusBarText()
 			}, this.settings.autoSyncDebounce * 1000)
 		} else {
 			await this.fileManager.loadLocalFiles()
+			this.updateStatusBarText()
+		}
+	}
+
+	async onRemoteFileChanged() {
+		if (!this.fileManager) {
+			return
+		}
+
+		if (this.state === PluginState.SYNCHING) {
+			return
+		}
+		
+		if (this.settings.enableAutoSync && this.state === PluginState.READY) {
+			window.clearTimeout(this.autoSyncTimer)
+			this.autoSyncTimer = window.setTimeout(async () => {
+				await this.runSync()
+				this.updateStatusBarText()
+			}, this.settings.autoSyncDebounce * 1000)
+		} else {
+			await this.fileManager.loadRemoteFiles()
 			this.updateStatusBarText()
 		}
 	}
@@ -185,12 +220,6 @@ export default class AwsSyncPlugin extends Plugin {
 					case PluginState.TESTING:
 						this.sendNotification('test passed!');
 						break;
-					case PluginState.UPLOADING:
-						this.sendNotification('upload completed!');
-						break;
-					case PluginState.DOWNLOADING:
-						this.sendNotification('download completed!');
-						break;
 					case PluginState.SYNCHING:
 						this.sendNotification('synchronization completed!');
 						break;
@@ -198,19 +227,14 @@ export default class AwsSyncPlugin extends Plugin {
 				break;
 			case PluginState.TESTING:
 				this.setStatusBarText('testing..');
-				this.sendNotification('running test..');
-				break;
-			case PluginState.UPLOADING:
-				this.setStatusBarText('uploading..');
-				this.sendNotification('uploading..');
-				break;
-			case PluginState.DOWNLOADING:
-				this.setStatusBarText('downloading..');
-				this.sendNotification('downloading..');
+				this.sendNotification('testing..');
 				break;
 			case PluginState.SYNCHING:
-				this.setStatusBarText('synching..');
-				this.sendNotification('synchronizing..');
+				this.setStatusBarText('running..');
+				this.sendNotification('running..');
+				break;
+			case PluginState.CHECKING:
+				this.setStatusBarText('checking..');
 				break;
 			case PluginState.ERROR:
 				this.setStatusBarText('error');
@@ -260,6 +284,10 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 
 		await this.initFileManager()
+
+    if (this.settings.enableAutoPull) {
+      this.initAutoPull()
+    }
 	}
 
 	areSettingsValid(): boolean {
@@ -317,7 +345,26 @@ export default class AwsSyncPlugin extends Plugin {
 		return this.runSync(SyncDirection.FROM_LOCAL)
 	}
 
-	async runTest(): Promise<void> {
+	async runCheck() {
+    if (!this.areSettingsValid()) {
+			return
+		}
+
+    this.setState(PluginState.CHECKING)
+		
+    try {
+			await this.fileManager.loadLocalFiles()
+		  await this.fileManager.loadRemoteFiles()
+		  this.updateStatusBarText()
+		} catch (error) {
+			this.setState(PluginState.ERROR, error.message)
+			return
+		}
+
+    this.setState(PluginState.READY)
+	}
+
+	async runTest() {
 		if (!this.areSettingsValid()) {
 			return
 		}
@@ -333,6 +380,33 @@ export default class AwsSyncPlugin extends Plugin {
 
 		this.setState(PluginState.READY)
 	}
+
+  async runRemotePull() {
+    if (!this.areSettingsValid()) {
+			return
+		}
+
+    this.setState(PluginState.CHECKING)
+
+    try {
+			await this.fileManager.loadRemoteFiles()
+		} catch (error) {
+			this.setState(PluginState.ERROR, error.message)
+			return
+		}
+
+    // Leave checking status to show some UI stuff
+    window.setTimeout(() => {
+      this.setState(PluginState.READY)
+    }, 1000)
+  }
+
+  initAutoPull() {
+    window.clearInterval(this.pullInterval)
+
+    this.pullInterval = window.setInterval(this.runRemotePull.bind(this), this.settings.autoPullInterval * 1000)
+    this.registerInterval(this.pullInterval)
+  }
 }
 
 class SampleSettingTab extends PluginSettingTab {
@@ -466,7 +540,7 @@ class SampleSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Automatic synchronization debounce')
-			.setDesc('Delay the synchronization respect vault changes, in seconds')
+			.setDesc('Delay the synchronization respect vault changes')
 			.addDropdown(dropdown => dropdown
 				.addOptions({
 					'0': "disabled",
@@ -480,6 +554,33 @@ class SampleSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.autoSyncDebounce.toString())
 				.onChange(async (value) => {
 					this.plugin.settings.autoSyncDebounce = parseInt(value);
+					await this.plugin.saveSettings();
+				}));
+
+    new Setting(containerEl)
+			.setName('Enable automatic pull')
+			.setDesc('Automatically pull changes from S3 bucket')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableAutoPull)
+				.onChange(async (value) => {
+					this.plugin.settings.enableAutoPull = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Automatic pull interval')
+			.setDesc('Interval between S3 bucket changes checks')
+			.addDropdown(dropdown => dropdown
+				.addOptions({
+					'10': "10 seconds",
+					'60': "1 minute",
+					'300': "5 minutes",
+					'600': "10 minutes",
+					'1800': "30 minutes",
+				})
+				.setValue(this.plugin.settings.autoPullInterval.toString())
+				.onChange(async (value) => {
+					this.plugin.settings.autoPullInterval = parseInt(value);
 					await this.plugin.saveSettings();
 				}));
 

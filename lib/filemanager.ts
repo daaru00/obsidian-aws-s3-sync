@@ -203,7 +203,7 @@ export class FileManager {
       const res: ListObjectsV2CommandOutput = await s3.send(new ListObjectsV2Command({
         Bucket: this.bucketOpt.bucketName,
         Prefix: this.bucketOpt.pathPrefix,
-        MaxKeys: 500,
+        MaxKeys: 1000,
         ContinuationToken: continuationToken
       }))
 
