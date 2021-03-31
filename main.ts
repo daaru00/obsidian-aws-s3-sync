@@ -60,13 +60,17 @@ export default class AwsSyncPlugin extends Plugin {
 		this.addCommand({
 			id: 'aws-s3-push',
 			name: 'Pull from bucket',
-			callback: this.runPull.bind(this)
+			callback: () => {
+				return this.runSync(SyncDirection.FROM_REMOTE)
+			}
 		});
 
 		this.addCommand({
 			id: 'aws-s3-pull',
 			name: 'Push to bucket',
-			callback: this.runPush.bind(this)
+			callback: () => {
+				return this.runSync(SyncDirection.FROM_LOCAL)
+			}
 		});
 
 		this.setState(PluginState.READY)
@@ -309,15 +313,9 @@ export default class AwsSyncPlugin extends Plugin {
 			this.updateStatusBarText()
 		}
 
-		this.setState(PluginState.READY)
-	}
-
-	async runPull() {
-		return this.runSync(SyncDirection.FROM_REMOTE)
-	}
-	
-	async runPush() {
-		return this.runSync(SyncDirection.FROM_LOCAL)
+    window.setTimeout(() => {
+      this.setState(PluginState.READY)
+    }, 1000)
 	}
 
 	async runCheck() {
@@ -336,7 +334,9 @@ export default class AwsSyncPlugin extends Plugin {
 			return
 		}
 
-    this.setState(PluginState.READY)
+    window.setTimeout(() => {
+      this.setState(PluginState.READY)
+    }, 1000)
 	}
 
 	async runTest() {
@@ -353,7 +353,9 @@ export default class AwsSyncPlugin extends Plugin {
 			return
 		}
 
-		this.setState(PluginState.READY)
+    window.setTimeout(() => {
+      this.setState(PluginState.READY)
+    }, 1000)
 	}
 
   async runRemotePull() {
@@ -370,7 +372,6 @@ export default class AwsSyncPlugin extends Plugin {
 			return
 		}
 
-    // Leave checking status to show some UI stuff
     window.setTimeout(() => {
       this.setState(PluginState.READY)
     }, 1000)
