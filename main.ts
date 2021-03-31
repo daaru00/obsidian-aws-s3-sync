@@ -422,9 +422,6 @@ class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h1', {text: 'AWS S3 Sync'});
-		containerEl.createEl('h2', {text: 'Settings'});
-
 		const profiles = await this.plugin.awsCredentials.loadProfiles()
 		if (profiles.length > 0) {
 			new Setting(containerEl)
