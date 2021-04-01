@@ -33,7 +33,7 @@ export class LocalFile extends File {
     this.lastModified = new Date(file.stat.mtime)
   }
 
-  async calculateMd5() {
+  async calculateMd5(): Promise<void> {
     const md5hash = crypto.createHash('md5');
     const content = await this.getContent()
     if (content == null) {
@@ -74,7 +74,7 @@ export class LocalFile extends File {
     })
   }
 
-  async delete() {
+  async delete(): Promise<void> {
     console.warn(`WARNING!! deleting local file ${this.path}`)
     await this.fileManager.vault.trash(this.file, true)
   }
@@ -101,10 +101,10 @@ export class RemoteFile extends File {
       Key: path.join(this.fileManager.bucketOpt.pathPrefix, this.path),
     }))
 
-
-    let content = '';
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const readable = Readable.from(res.Body);
+    const readable = Readable.from(res.Body)
+    let content = ''
     for await (const chunk of readable) {
       content += chunk;
     }
@@ -130,7 +130,7 @@ export class RemoteFile extends File {
     return localFile
   }
 
-  async delete() {
+  async delete(): Promise<void> {
     const s3 = this.fileManager.getS3Client()
     await s3.send(new DeleteObjectCommand({
       Bucket: this.fileManager.bucketOpt.bucketName,
@@ -274,26 +274,26 @@ export class FileManager {
     }
   }
 
-  isInSync() {
+  isInSync(): boolean {
     const status = this.getSyncStatus()
     return status.filesToDelete.length === 0 && status.filesToUpload.length === 0 && status.filesToDownload.length === 0
   }
 
-  async sync(direction?: SyncDirection | undefined) {
+  async sync(direction?: SyncDirection | undefined): Promise<void> {
     const stats = this.getSyncStatus(direction)
     const parallel = 10
     
-    for (var i = 0; i < stats.filesToDownload.length; i += parallel) {
+    for (let i = 0; i < stats.filesToDownload.length; i += parallel) {
       const chunk = stats.filesToDownload.slice(i, i + parallel)
       await Promise.all(chunk.map(file => file.download()))
     }
 
-    for (var i = 0; i < stats.filesToUpload.length; i += parallel) {
+    for (let i = 0; i < stats.filesToUpload.length; i += parallel) {
       const chunk = stats.filesToUpload.slice(i, i + parallel)
       await Promise.all(chunk.map(file => file.upload()))
     }
 
-    for (var i = 0; i < stats.filesToDelete.length; i += parallel) {
+    for (let i = 0; i < stats.filesToDelete.length; i += parallel) {
       const chunk = stats.filesToDelete.slice(i, i + parallel)
       await Promise.all(chunk.map(file => file.delete()))
     }

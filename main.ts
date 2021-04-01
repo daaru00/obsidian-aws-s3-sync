@@ -19,12 +19,12 @@ export default class AwsSyncPlugin extends Plugin {
 	statusBarItem: HTMLElement;
 	awsCredentials: AwsCredentials;
 	fileManager: FileManager;
-  state: PluginState;
+	state: PluginState;
 	syncStatus: SyncStat;
-	autoSyncTimer: any;
-  pullInterval: number
+	autoSyncTimer: number;
+	pullInterval: number
 
-	async onload() {
+	async onload(): Promise<void> {
 		this.awsCredentials = new AwsCredentials(path.join(os.homedir(), '.aws', 'credentials'))
 		await this.awsCredentials.loadProfiles()
 
@@ -40,7 +40,7 @@ export default class AwsSyncPlugin extends Plugin {
 		this.app.vault.on('rename', this.onLocalFileChanged.bind(this))
 
 		await this.initFileManager()
-    
+
 		this.addCommand({
 			id: 'aws-s3-check',
 			name: 'Check synchronization status',
@@ -75,23 +75,23 @@ export default class AwsSyncPlugin extends Plugin {
 
 		this.setState(PluginState.READY)
 
-    if (this.settings.enableAutoPull) {
-      this.initAutoPull()
-    }
+		if (this.settings.enableAutoPull) {
+			this.initAutoPull()
+		}
 	}
 
-	async initFileManager() {
+	async initFileManager(): Promise<void> {
 		if (!this.areSettingsValid()) {
 			return
 		}
 
 		this.fileManager = new FileManager(this.app.vault, this.getConfiguredProfile(), {
-			bucketName: this.getConfiguredBucketName(), 
+			bucketName: this.getConfiguredBucketName(),
 			pathPrefix: this.getConfiguredBucketPathPrefix(),
-      region: this.settings.region
+			region: this.settings.region
 		}, {
 			direction: this.settings.syncDirection,
-			localFileProtection: this.settings.localFileProtection  
+			localFileProtection: this.settings.localFileProtection
 		})
 
 		await this.fileManager.loadLocalFiles()
@@ -110,10 +110,10 @@ export default class AwsSyncPlugin extends Plugin {
 		if (!this.settings.enableNotifications) {
 			return
 		}
-		new Notice('S3 bucket sync '+msg)
+		new Notice('S3 bucket sync ' + msg)
 	}
 
-	async onLocalFileChanged() {
+	async onLocalFileChanged(): Promise<void> {
 		if (!this.fileManager) {
 			return
 		}
@@ -121,7 +121,7 @@ export default class AwsSyncPlugin extends Plugin {
 		if (this.state === PluginState.SYNCHING) {
 			return
 		}
-		
+
 		if (this.settings.enableAutoSync && this.state === PluginState.READY) {
 			window.clearTimeout(this.autoSyncTimer)
 			this.autoSyncTimer = window.setTimeout(async () => {
@@ -134,7 +134,7 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 	}
 
-	async onRemoteFileChanged() {
+	async onRemoteFileChanged(): Promise<void> {
 		if (!this.fileManager) {
 			return
 		}
@@ -142,7 +142,7 @@ export default class AwsSyncPlugin extends Plugin {
 		if (this.state === PluginState.SYNCHING) {
 			return
 		}
-		
+
 		if (this.settings.enableAutoSync && this.state === PluginState.READY) {
 			window.clearTimeout(this.autoSyncTimer)
 			this.autoSyncTimer = window.setTimeout(async () => {
@@ -155,7 +155,7 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 	}
 
-	updateStatusBarText () {
+	updateStatusBarText(): void {
 		if (!this.areSettingsValid()) {
 			return
 		}
@@ -165,7 +165,7 @@ export default class AwsSyncPlugin extends Plugin {
 			return
 		}
 
-		if (this.settings.enableAutoSync) { 
+		if (this.settings.enableAutoSync) {
 			this.setStatusBarText('...');
 			return
 		}
@@ -173,7 +173,7 @@ export default class AwsSyncPlugin extends Plugin {
 		if (this.fileManager.isInSync()) {
 			this.setStatusBarText('0');
 		} else {
-			let msgs = []
+			const msgs = []
 			if (this.syncStatus.filesToUpload.length > 0) {
 				msgs.push(`${this.syncStatus.filesToUpload.length} &#8593;`)
 			}
@@ -187,7 +187,7 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 	}
 
-	setState(state: PluginState, msg = "") {
+	setState(state: PluginState, msg = ""): void {
 		switch (state) {
 			case PluginState.LOADING:
 				this.setStatusBarText('...');
@@ -195,7 +195,7 @@ export default class AwsSyncPlugin extends Plugin {
 			case PluginState.READY:
 				this.updateStatusBarText()
 
-				switch (this.state ) {
+				switch (this.state) {
 					case PluginState.TESTING:
 						this.sendNotification('test passed!');
 						break;
@@ -226,7 +226,7 @@ export default class AwsSyncPlugin extends Plugin {
 
 	getConfiguredProfile(): AwsProfile | undefined {
 		const configuredProfile = this.awsCredentials.getProfileByName(this.settings.profile)
-		
+
 		if (!configuredProfile) {
 			this.setState(PluginState.ERROR, `profile '${this.settings.profile}' not found`)
 			return
@@ -235,15 +235,15 @@ export default class AwsSyncPlugin extends Plugin {
 		return configuredProfile
 	}
 
-	getConfiguredBucketName() {
+	getConfiguredBucketName(): string {
 		return this.settings.bucketName
 	}
 
-	getConfiguredBucketPathPrefix() {
+	getConfiguredBucketPathPrefix(): string {
 		let prefix = this.settings.bucketPathPrefix
 		if (prefix.startsWith('/')) {
-      prefix = prefix.slice(1)
-    }
+			prefix = prefix.slice(1)
+		}
 		if (!prefix.endsWith('/')) {
 			prefix += '/'
 		}
@@ -264,16 +264,16 @@ export default class AwsSyncPlugin extends Plugin {
 
 		await this.initFileManager()
 
-    if (this.settings.enableAutoPull) {
-      this.initAutoPull()
-    }
+		if (this.settings.enableAutoPull) {
+			this.initAutoPull()
+		}
 	}
 
 	areSettingsValid(): boolean {
 		if (typeof this.settings.bucketName !== "string" || this.settings.bucketName.trim().length == 0) {
 			return false
 		}
-		
+
 		const configuredProfile = this.getConfiguredProfile()
 		if (!configuredProfile) {
 			return false
@@ -284,7 +284,7 @@ export default class AwsSyncPlugin extends Plugin {
 
 	async runSync(direction?: SyncDirection): Promise<void> {
 		clearTimeout(this.autoSyncTimer)
-		
+
 		if (!this.areSettingsValid()) {
 			return
 		}
@@ -313,33 +313,33 @@ export default class AwsSyncPlugin extends Plugin {
 			this.updateStatusBarText()
 		}
 
-    window.setTimeout(() => {
-      this.setState(PluginState.READY)
-    }, 1000)
+		window.setTimeout(() => {
+			this.setState(PluginState.READY)
+		}, 1000)
 	}
 
-	async runCheck() {
-    if (!this.areSettingsValid()) {
+	async runCheck(): Promise<void> {
+		if (!this.areSettingsValid()) {
 			return
 		}
 
-    this.setState(PluginState.CHECKING)
-		
-    try {
+		this.setState(PluginState.CHECKING)
+
+		try {
 			await this.fileManager.loadLocalFiles()
-		  await this.fileManager.loadRemoteFiles()
-		  this.updateStatusBarText()
+			await this.fileManager.loadRemoteFiles()
+			this.updateStatusBarText()
 		} catch (error) {
 			this.setState(PluginState.ERROR, error.message)
 			return
 		}
 
-    window.setTimeout(() => {
-      this.setState(PluginState.READY)
-    }, 1000)
+		window.setTimeout(() => {
+			this.setState(PluginState.READY)
+		}, 1000)
 	}
 
-	async runTest() {
+	async runTest(): Promise<void> {
 		if (!this.areSettingsValid()) {
 			return
 		}
@@ -353,34 +353,34 @@ export default class AwsSyncPlugin extends Plugin {
 			return
 		}
 
-    window.setTimeout(() => {
-      this.setState(PluginState.READY)
-    }, 1000)
+		window.setTimeout(() => {
+			this.setState(PluginState.READY)
+		}, 1000)
 	}
 
-  async runRemotePull() {
-    if (!this.areSettingsValid()) {
+	async runRemotePull(): Promise<void> {
+		if (!this.areSettingsValid()) {
 			return
 		}
 
-    this.setState(PluginState.CHECKING)
+		this.setState(PluginState.CHECKING)
 
-    try {
+		try {
 			await this.fileManager.loadRemoteFiles()
 		} catch (error) {
 			this.setState(PluginState.ERROR, error.message)
 			return
 		}
 
-    window.setTimeout(() => {
-      this.setState(PluginState.READY)
-    }, 1000)
-  }
+		window.setTimeout(() => {
+			this.setState(PluginState.READY)
+		}, 1000)
+	}
 
-  initAutoPull() {
-    window.clearInterval(this.pullInterval)
+	initAutoPull(): void {
+		window.clearInterval(this.pullInterval)
 
-    this.pullInterval = window.setInterval(this.runRemotePull.bind(this), this.settings.autoPullInterval * 1000)
-    this.registerInterval(this.pullInterval)
-  }
+		this.pullInterval = window.setInterval(this.runRemotePull.bind(this), this.settings.autoPullInterval * 1000)
+		this.registerInterval(this.pullInterval)
+	}
 }

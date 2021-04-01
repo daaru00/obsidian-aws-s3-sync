@@ -42,7 +42,7 @@ export class AwsS3SyncSettingTab extends PluginSettingTab {
 	}
 
 	async display(): Promise<void> {
-		let {containerEl} = this;
+		const {containerEl} = this;
 
 		containerEl.empty();
 
@@ -52,7 +52,7 @@ export class AwsS3SyncSettingTab extends PluginSettingTab {
 				.setName('AWS Profile')
 				.setDesc('The name AWS profile name configured in credentials file')
 				.addDropdown(dropdown => dropdown
-					.addOptions(profiles.reduce((acc: any, profile: AwsProfile) => {
+					.addOptions(profiles.reduce((acc: {[key: string]: string}, profile: AwsProfile) => {
 						acc[profile.name] = profile.name
 						return acc
 					}, {}))

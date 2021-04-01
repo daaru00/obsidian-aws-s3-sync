@@ -40,12 +40,12 @@ export class AwsCredentials {
     const rows = content.split(os.EOL)
 
     // Loop for each row
-    var profiles = []
+    const profiles = []
     let profileIteration = null
     for (const row of rows) {
 
       // Check if row is an header
-      let headerMatch = row.match('^\\[(.*)\\]$')
+      const headerMatch = row.match('^\\[(.*)\\]$')
       if (headerMatch !== null && headerMatch[1]) {
 
         // Check if profile creation is in progress
