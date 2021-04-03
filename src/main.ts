@@ -33,9 +33,9 @@ export default class AwsSyncPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new AwsSyncSettingTab(this.app, this));
 
-		this.statusBarItem = this.addStatusBarItem()
-		this.statusBarItem.onclick = this.openSyncStatusModal.bind(this)
-		this.statusBarItem.addClass('aws-s3-sync-status-bar-item')
+		if (this.settings.enableStatusBar) {
+			this.initStatusBar()
+		}
 
 		this.setState(PluginState.LOADING)
 
@@ -120,8 +120,16 @@ export default class AwsSyncPlugin extends Plugin {
 		this.updateStatusBarText()
 	}
 
+	initStatusBar(): void {
+		this.statusBarItem = this.addStatusBarItem()
+		this.statusBarItem.onclick = this.openSyncStatusModal.bind(this)
+		this.statusBarItem.addClass('aws-s3-sync-status-bar-item')
+
+		this.setState(PluginState.LOADING)
+	}
+
 	setStatusBarText(msg: string): void {
-		if (!this.settings.enableStatusBar) {
+		if (!this.statusBarItem) {
 			return
 		}
 		this.statusBarItem.innerHTML = msg + ' bucket sync';
@@ -279,8 +287,11 @@ export default class AwsSyncPlugin extends Plugin {
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
 
-		if (!this.settings.enableStatusBar) {
-			this.statusBarItem.setText('')
+		if (!this.settings.enableStatusBar && this.statusBarItem) {
+			this.statusBarItem.remove()
+			this.statusBarItem = null
+		} else if (this.settings.enableStatusBar && !this.statusBarItem) {
+			this.initStatusBar()
 		}
 
 		await this.initFileManager()
