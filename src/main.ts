@@ -104,14 +104,14 @@ export default class AwsSyncPlugin extends Plugin {
 		if (!this.settings.enableStatusBar) {
 			return
 		}
-		this.statusBarItem.innerHTML = msg + ' S3 bucket';
+		this.statusBarItem.innerHTML = msg + ' bucket sync';
 	}
 
 	sendNotification(msg: string): void {
 		if (!this.settings.enableNotifications) {
 			return
 		}
-		new Notice('S3 bucket sync ' + msg)
+		new Notice('S3 bucket ' + msg)
 	}
 
 	async onLocalFileChanged(): Promise<void> {
