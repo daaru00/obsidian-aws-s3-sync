@@ -15,7 +15,7 @@ export class AwsProfile {
   }
 }
 
-export class AwsCredentials {
+export default class AwsCredentials {
   filePath: string
   profiles: AwsProfile[]
   currentProfile: AwsProfile

@@ -161,7 +161,7 @@ export interface BucketOption {
   region: string
 }
 
-export class FileManager {
+export default class FileManager {
   vault: Vault;
   profile: AwsProfile;
   bucketOpt: BucketOption;

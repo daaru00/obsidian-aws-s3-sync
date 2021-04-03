@@ -1,9 +1,10 @@
 import * as os from 'os'
 import * as path from 'path'
 import { Notice, Plugin } from 'obsidian'
-import { AwsCredentials, AwsProfile } from './lib/aws'
-import { FileManager, SyncStat, SyncDirection } from './lib/filemanager'
-import { AwsS3SyncSettingTab, AwsSyncPluginSettings, DEFAULT_SETTINGS } from 'settings'
+import AwsCredentials, { AwsProfile } from './lib/aws'
+import FileManager, { SyncStat, SyncDirection } from './lib/filemanager'
+import AwsSyncPluginSettings, { DEFAULT_SETTINGS } from './settings'
+import AwsS3SyncSettingTab from './settings-tab'
 
 enum PluginState {
 	LOADING,
