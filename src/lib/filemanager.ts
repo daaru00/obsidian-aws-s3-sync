@@ -16,6 +16,7 @@ export abstract class File {
 
   abstract getContent(): Promise<string>
   abstract delete(): Promise<void>
+  abstract isLocalFile(): boolean
 }
 
 export class LocalFile extends File {
@@ -31,6 +32,10 @@ export class LocalFile extends File {
     this.extension = file.extension
     this.path = file.path
     this.lastModified = new Date(file.stat.mtime)
+  }
+
+  isLocalFile(): boolean {
+    return true
   }
 
   async calculateMd5(): Promise<void> {
@@ -91,6 +96,10 @@ export class RemoteFile extends File {
     this.extension = path.extname(this.path)
     this.md5hash = JSON.parse(obj.ETag)
     this.lastModified = obj.LastModified
+  }
+
+  isLocalFile(): boolean {
+    return false
   }
 
   async getContent(): Promise<string> {

@@ -3,7 +3,7 @@ import AwsSyncPlugin from './main';
 import { AwsProfile, REGIONS } from './lib/aws'
 import { SyncDirection } from './lib/filemanager'
 
-export default class AwsS3SyncSettingTab extends PluginSettingTab {
+export default class AwsSyncSettingTab extends PluginSettingTab {
 	plugin: AwsSyncPlugin;
 
 	constructor(app: App, plugin: AwsSyncPlugin) {
@@ -32,7 +32,7 @@ export default class AwsS3SyncSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}));
 		} else {
-			containerEl.createEl('p', {text: 'Cloud not find any AWS profiles!', cls: ['setting-item', 'aws-s3-no-profile']});
+			containerEl.createEl('p', {text: 'Cloud not find any AWS profiles!', cls: ['setting-item', 'aws-s3-sync-no-profile']});
 		}
 
     new Setting(containerEl)

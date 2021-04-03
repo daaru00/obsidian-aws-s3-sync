@@ -4,7 +4,8 @@ import { Notice, Plugin } from 'obsidian'
 import AwsCredentials, { AwsProfile } from './lib/aws'
 import FileManager, { SyncStat, SyncDirection } from './lib/filemanager'
 import AwsSyncPluginSettings, { DEFAULT_SETTINGS } from './settings'
-import AwsS3SyncSettingTab from './settings-tab'
+import AwsSyncSettingTab from './settings-tab'
+import StatusModal from './status-modal'
 
 enum PluginState {
 	LOADING,
@@ -30,9 +31,12 @@ export default class AwsSyncPlugin extends Plugin {
 		await this.awsCredentials.loadProfiles()
 
 		await this.loadSettings();
-		this.addSettingTab(new AwsS3SyncSettingTab(this.app, this));
+		this.addSettingTab(new AwsSyncSettingTab(this.app, this));
 
 		this.statusBarItem = this.addStatusBarItem()
+		this.statusBarItem.onclick = this.openSyncStatusModal.bind(this)
+		this.statusBarItem.addClass('aws-s3-sync-status-bar-item')
+
 		this.setState(PluginState.LOADING)
 
 		this.app.vault.on('create', this.onLocalFileChanged.bind(this))
@@ -45,7 +49,16 @@ export default class AwsSyncPlugin extends Plugin {
 		this.addCommand({
 			id: 'aws-s3-check',
 			name: 'Check synchronization status',
-			callback: this.runCheck.bind(this)
+			callback: async () => {
+				await this.runCheck()
+
+				if (this.fileManager && this.fileManager.isInSync()) {
+					this.sendNotification('in sync, no changes detected')
+					return
+				}
+
+				this.openSyncStatusModal()
+			}
 		});
 
 		this.addCommand({
@@ -78,6 +91,13 @@ export default class AwsSyncPlugin extends Plugin {
 
 		if (this.settings.enableAutoPull) {
 			this.initAutoPull()
+		}
+	}
+
+	openSyncStatusModal(): void {
+		if (this.syncStatus && this.fileManager.isInSync() === false) {
+			new StatusModal(this).open();
+			return
 		}
 	}
 
