@@ -2,10 +2,12 @@ import * as os from 'os'
 import * as path from 'path'
 import { Notice, Plugin } from 'obsidian'
 import AwsCredentials, { AwsProfile } from './lib/aws'
-import FileManager, { SyncStat, SyncDirection } from './lib/filemanager'
+import FileManager, { SyncStat, SyncDirection, UPLOAD_SYMBOL, DOWNLOAD_SYMBOL, DELETE_SYMBOL } from './lib/filemanager'
 import AwsSyncPluginSettings, { DEFAULT_SETTINGS } from './settings'
 import AwsSyncSettingTab from './settings-tab'
 import StatusModal from './status-modal'
+
+const PLUGIN_TEXT_PREFIX = 'S3 Bucket: '
 
 enum PluginState {
 	LOADING,
@@ -132,14 +134,14 @@ export default class AwsSyncPlugin extends Plugin {
 		if (!this.statusBarItem) {
 			return
 		}
-		this.statusBarItem.innerHTML = msg + ' bucket sync';
+		this.statusBarItem.setText(PLUGIN_TEXT_PREFIX + msg)
 	}
 
 	sendNotification(msg: string): void {
 		if (!this.settings.enableNotifications) {
 			return
 		}
-		new Notice('S3 bucket ' + msg)
+		new Notice(PLUGIN_TEXT_PREFIX + msg)
 	}
 
 	async onLocalFileChanged(): Promise<void> {
@@ -200,17 +202,17 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 
 		if (this.fileManager.isInSync()) {
-			this.setStatusBarText('0');
+			this.setStatusBarText('in sync');
 		} else {
 			const msgs = []
 			if (this.syncStatus.filesToUpload.length > 0) {
-				msgs.push(`${this.syncStatus.filesToUpload.length} &#8593;`)
+				msgs.push(UPLOAD_SYMBOL + ' ' + this.syncStatus.filesToUpload.length.toString())
 			}
 			if (this.syncStatus.filesToDownload.length > 0) {
-				msgs.push(`${this.syncStatus.filesToDownload.length} &#8595;`)
+				msgs.push(DOWNLOAD_SYMBOL + ' ' + this.syncStatus.filesToDownload.length.toString())
 			}
 			if (this.syncStatus.filesToDelete.length > 0) {
-				msgs.push(`${this.syncStatus.filesToDelete.length} &#215;`)
+				msgs.push(DELETE_SYMBOL + ' ' + this.syncStatus.filesToDelete.length.toString())
 			}
 			this.setStatusBarText(msgs.join(' '));
 		}
