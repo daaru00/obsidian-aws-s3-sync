@@ -261,7 +261,7 @@ export default class FileManager {
         } else {
           filesToDownload.push(remoteFile)
         }
-      } else if (localFile.md5hash !== remoteFile.md5hash && remoteFile.lastModified > localFile.lastModified) {
+      } else if (localFile.md5hash && localFile.md5hash !== remoteFile.md5hash && remoteFile.lastModified > localFile.lastModified) {
         filesToDownload.push(remoteFile)
       }
     }
@@ -275,7 +275,7 @@ export default class FileManager {
         } else {
           filesToUpload.push(localFile)
         }
-      } else if (remoteFile.md5hash !== localFile.md5hash && localFile.lastModified > remoteFile.lastModified) {
+      } else if (localFile.md5hash && remoteFile.md5hash !== localFile.md5hash && localFile.lastModified > remoteFile.lastModified) {
         filesToUpload.push(localFile)
       }
     }
