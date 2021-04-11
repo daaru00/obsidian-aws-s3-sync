@@ -38,6 +38,11 @@ export class LocalFile extends File {
   }
 
   async calculateMd5(): Promise<void> {
+    // Skip MD% calculation for file bigger then 500mb
+    if (this.getSizeInMb() > 500) {
+      return
+    }
+
     const md5hash = crypto.createHash('md5');
     const content = await this.getContent()
     if (content == null) {
@@ -54,6 +59,10 @@ export class LocalFile extends File {
     } catch(err) {
       return null
     }
+  }
+
+  getSizeInMb(): number {
+    return this.file.stat.size / 1024 / 1024
   }
 
   async upload(): Promise<RemoteFile> {
@@ -188,12 +197,12 @@ export default class FileManager {
   }
 
   async loadLocalFiles(): Promise<LocalFile[]> {
-    const files = this.vault.getMarkdownFiles()
+    const files = this.vault.getFiles()
     this.localFiles = files.map((file: TFile) => new LocalFile(this, file))
 
     // Load content for md5 hash elaboration
-    await Promise.all(this.localFiles.map(file => file.calculateMd5()))    
-
+    await Promise.all(this.localFiles.map(file => file.calculateMd5()))
+    
     return this.localFiles;
   }
 
