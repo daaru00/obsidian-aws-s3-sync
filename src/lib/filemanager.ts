@@ -61,8 +61,16 @@ export class LocalFile extends File {
     }
   }
 
+  getSizeInKb(): number {
+    return this.file.stat.size / 1024
+  }
+
   getSizeInMb(): number {
-    return this.file.stat.size / 1024 / 1024
+    return this.getSizeInKb() / 1024
+  }
+
+  getSizeInGb(): number {
+    return this.getSizeInMb() / 1024
   }
 
   async upload(): Promise<RemoteFile> {
@@ -272,7 +280,7 @@ export default class FileManager {
       if (!remoteFile) {
         if (this.syncOpt.localFileProtection === false && this.syncOpt.direction === SyncDirection.FROM_REMOTE) {
           filesToDelete.push(localFile)
-        } else {
+        } else if (localFile.getSizeInGb() < 1) { // need to support multipart upload
           filesToUpload.push(localFile)
         }
       } else if (localFile.md5hash && remoteFile.md5hash !== localFile.md5hash && localFile.lastModified > remoteFile.lastModified) {

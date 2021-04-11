@@ -49,3 +49,14 @@ Enable the automatic synchronization to run sync process on vault files changes:
 You can also change the notifications behavior, if automatic synchronization is enable maybe you don't need the notice notification:
 
 ![notifications settings](./doc/imgs/notifications-settings.png)
+
+## Limitations
+
+### File bigger then 500mb
+
+The synchronization flow use MD5 hash generation in order to be able to identify changed file based on the content. 
+File bigger then 500mb will be skipped for performance reasons, so these files will be just uploaded if does not exist remotely or download if not exist locally.
+
+### File bigger then 1GB
+
+File bigger then 1GB cannot be uploaded due a S3 limitation fo basic upload, multipart upload currently is not implemented.
