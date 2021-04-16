@@ -5,9 +5,6 @@ on:
     tags:
       - "*"
 
-env:
-  PLUGIN_NAME: obsidian-aws-s3-sync
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,9 +20,9 @@ jobs:
         run: |
           npm install
           npm run build --if-present
-          mkdir ${{ env.PLUGIN_NAME }}
-          cp main.js manifest.json ${{ env.PLUGIN_NAME }}
-          zip -r ${{ env.PLUGIN_NAME }}.zip ${{ env.PLUGIN_NAME }}
+          mkdir ${{ github.event.repository.name }}
+          cp main.js manifest.json ${{ github.event.repository.name }}
+          zip -r ${{ github.event.repository.name }}.zip ${{ github.event.repository.name }}
           ls
           echo "::set-output name=tag_name::$(git tag --sort version:refname | tail -n 1)"
 
@@ -48,8 +45,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ env.PLUGIN_NAME }}.zip
-          asset_name: ${{ env.PLUGIN_NAME }}-${{ steps.build.outputs.tag_name }}.zip
+          asset_path: ./${{ github.event.repository.name }}.zip
+          asset_name: ${{ github.event.repository.name }}-${{ steps.build.outputs.tag_name }}.zip
           asset_content_type: application/zip
 
       - name: Upload main.js
