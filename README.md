@@ -4,13 +4,38 @@ This [Obsidian.md](https://obsidian.md/) plugin allow to evaluate synchronize th
 
 ## Requirements
 
-- The `.aws/credentials` file present in user home and a valid [configured profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
+- The `~/.aws/credentials` file present in user home and a valid configured profile
 - An AWS Account
 - An AWS S3 bucket
 
 ## Installation
 
 Download zip archive from [GitHub releases page](https://github.com/daaru00/obsidian-aws-s3-sync/releases) and extract it into `<vault>/.obsidian/plugins` directory.
+
+## AWS credentials
+
+This plugin requires a valid AWS profile configured on your local machine, in order to do that follow the [AWS documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+
+You can configure it manually creating file `~/.aws/credentials` in your user's home adding AWS IAM user credentials:
+```
+[default]
+aws_access_key_id = XXXXXXXXXXXXXXXXXXXX
+aws_secret_access_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+or assuming a IAM Role:
+```
+[my-company]
+aws_access_key_id = XXXXXXXXXXXXXXXXXXXX
+aws_secret_access_key = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+[my-profile]
+role_arn = arn:aws:iam::123456789012:role/OrganizationAccountAccessRole
+source_profile = my-company
+```
+
+Configure the required credentials and bucket section:
+
+![credentials settings](./doc/imgs/credentials-settings.png)
 
 ## Usage
 
@@ -27,10 +52,6 @@ When automatic synchronization is enabled every file change (also create and del
 ![automatic changes](./doc/gifs/automatic-sync.gif)
 
 ## Configurations
-
-Configure the required credentials and bucket section (profiles name will be loaded from `~/.aws/credentials` file):
-
-![credentials settings](./doc/imgs/credentials-settings.png)
 
 Configure the sync behavior, the source (local or remote) will command which file will be create, updated or delete in the source:
 
