@@ -1,5 +1,5 @@
 import { TFile, Vault } from 'obsidian'
-import { S3Client, ListObjectsV2Command, _Object, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, ListObjectsV2CommandOutput } from "@aws-sdk/client-s3"
+import { S3Client, ListObjectsV2Command, _Object, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, ListObjectsV2CommandOutput } from '@aws-sdk/client-s3'
 import { AwsProfile } from './aws'
 import * as path from 'path'
 import * as crypto from 'crypto'
@@ -26,7 +26,7 @@ export class LocalFile extends File {
   file: TFile;
 
   constructor(fileManager: FileManager, file: TFile) {
-    super();
+    super()
 
     this.fileManager = fileManager
     this.file = file
@@ -43,12 +43,12 @@ export class LocalFile extends File {
       return
     }
 
-    const md5hash = crypto.createHash('md5');
+    const md5hash = crypto.createHash('md5')
     const content = await this.getContent()
     if (content == null) {
       return
     }
-    md5hash.update(Buffer.from(content, 'utf8'));
+    md5hash.update(Buffer.from(content, 'utf8'))
     this.md5hash = md5hash.digest('hex')
   }
 
@@ -103,7 +103,7 @@ export class LocalFile extends File {
 
 export class RemoteFile extends File {
   constructor(fileManager: FileManager, obj: _Object) {
-    super();
+    super()
 
     this.fileManager = fileManager
 
@@ -127,10 +127,10 @@ export class RemoteFile extends File {
     const readable = Readable.from(res.Body)
     let content = ''
     for await (const chunk of readable) {
-      content += chunk;
+      content += chunk
     }
 
-    return content;
+    return content
   }
 
   async download(): Promise<LocalFile> {
@@ -211,12 +211,12 @@ export default class FileManager {
     // Load content for md5 hash elaboration
     await Promise.all(this.localFiles.map(file => file.calculateMd5()))
     
-    return this.localFiles;
+    return this.localFiles
   }
 
   async loadRemoteFiles(): Promise<RemoteFile[]> {
     const s3 = this.getS3Client()
-    let contents: _Object[] = [];
+    let contents: _Object[] = []
 
     let continuationToken = undefined
     let maxPages = 10
@@ -237,7 +237,7 @@ export default class FileManager {
       contents = contents.concat(res.Contents)
       continuationToken = res.NextContinuationToken
       
-    } while (continuationToken != undefined && maxPages > 0)
+    } while (continuationToken !== undefined && maxPages > 0)
 
     this.remoteFiles = contents.map(content => new RemoteFile(this, content))
     return this.remoteFiles

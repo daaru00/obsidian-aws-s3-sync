@@ -15,5 +15,10 @@ module.exports = {
     },
     "plugins": [
         "@typescript-eslint"
-    ]
+    ],
+    "rules": {
+        "eqeqeq": [2, "allow-null"],
+        "quotes": [2, "single"],
+        "semi": [2, "never"]
+    },
 };

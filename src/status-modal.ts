@@ -1,6 +1,6 @@
-import { FuzzySuggestModal } from "obsidian"
-import { UPLOAD_SYMBOL, DOWNLOAD_SYMBOL, DELETE_SYMBOL, File } from "./lib/filemanager";
-import AwsSyncPlugin from "./main";
+import { FuzzySuggestModal } from 'obsidian'
+import { UPLOAD_SYMBOL, DOWNLOAD_SYMBOL, DELETE_SYMBOL, File } from './lib/filemanager'
+import AwsSyncPlugin from './main'
 
 export enum FileChange {
   UPLOAD,
@@ -17,7 +17,7 @@ export default class StatusModal extends FuzzySuggestModal<ChangedFileItem> {
   plugin: AwsSyncPlugin
 
 	constructor(plugin: AwsSyncPlugin) {
-		super(plugin.app);
+		super(plugin.app)
     this.plugin = plugin
 	}
 
@@ -46,16 +46,16 @@ export default class StatusModal extends FuzzySuggestModal<ChangedFileItem> {
     switch (item.change) {
       case FileChange.UPLOAD:
         itemText += UPLOAD_SYMBOL
-        break;
+        break
       case FileChange.DOWNLOAD:
         itemText += DOWNLOAD_SYMBOL
-        break;
+        break
       case FileChange.DELETE:
         itemText += DELETE_SYMBOL
-        break;
+        break
     }
 
-    return itemText + ' ' + item.file.path;
+    return itemText + ' ' + item.file.path
   }
 
   onChooseItem(item: ChangedFileItem): void {
@@ -70,6 +70,6 @@ export default class StatusModal extends FuzzySuggestModal<ChangedFileItem> {
       return
     }
 
-    this.app.workspace.openLinkText(file.path, "/");
+    this.app.workspace.openLinkText(file.path, '/')
   }
 }

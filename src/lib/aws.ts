@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as os from 'os'
-import { fromIni }  from "@aws-sdk/credential-provider-ini"
-import { Credentials, Provider } from "@aws-sdk/types"
+import { fromIni }  from '@aws-sdk/credential-provider-ini'
+import { Credentials, Provider } from '@aws-sdk/types'
 
 export class AwsProfile {
   name: string

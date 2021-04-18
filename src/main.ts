@@ -32,8 +32,8 @@ export default class AwsSyncPlugin extends Plugin {
 		this.awsCredentials = new AwsCredentials(path.join(os.homedir(), '.aws', 'credentials'))
 		await this.awsCredentials.loadProfiles()
 
-		await this.loadSettings();
-		this.addSettingTab(new AwsSyncSettingTab(this.app, this));
+		await this.loadSettings()
+		this.addSettingTab(new AwsSyncSettingTab(this.app, this))
 
 		if (this.settings.enableStatusBar) {
 			this.initStatusBar()
@@ -61,17 +61,17 @@ export default class AwsSyncPlugin extends Plugin {
 
 				this.openSyncStatusModal()
 			}
-		});
+		})
 
 		this.addCommand({
 			id: 'aws-s3-sync',
 			name: 'Run synchronization',
 			hotkeys: [{
-				modifiers: ["Ctrl", "Shift"],
-				key: "s",
+				modifiers: ['Ctrl', 'Shift'],
+				key: 's',
 			}],
 			callback: this.runSync.bind(this)
-		});
+		})
 
 		this.addCommand({
 			id: 'aws-s3-push',
@@ -79,7 +79,7 @@ export default class AwsSyncPlugin extends Plugin {
 			callback: () => {
 				return this.runSync(SyncDirection.FROM_REMOTE)
 			}
-		});
+		})
 
 		this.addCommand({
 			id: 'aws-s3-pull',
@@ -87,7 +87,7 @@ export default class AwsSyncPlugin extends Plugin {
 			callback: () => {
 				return this.runSync(SyncDirection.FROM_LOCAL)
 			}
-		});
+		})
 
 		this.setState(PluginState.READY)
 
@@ -98,7 +98,7 @@ export default class AwsSyncPlugin extends Plugin {
 
 	openSyncStatusModal(): void {
 		if (this.syncStatus && this.fileManager.isInSync() === false) {
-			new StatusModal(this).open();
+			new StatusModal(this).open()
 			return
 		}
 	}
@@ -197,12 +197,12 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 
 		if (this.settings.enableAutoSync) {
-			this.setStatusBarText('...');
+			this.setStatusBarText('...')
 			return
 		}
 
 		if (this.fileManager.isInSync()) {
-			this.setStatusBarText('in sync');
+			this.setStatusBarText('in sync')
 		} else {
 			const msgs = []
 			if (this.syncStatus.filesToUpload.length > 0) {
@@ -214,42 +214,42 @@ export default class AwsSyncPlugin extends Plugin {
 			if (this.syncStatus.filesToDelete.length > 0) {
 				msgs.push(DELETE_SYMBOL + ' ' + this.syncStatus.filesToDelete.length.toString())
 			}
-			this.setStatusBarText(msgs.join(' '));
+			this.setStatusBarText(msgs.join(' '))
 		}
 	}
 
-	setState(state: PluginState, msg = ""): void {
+	setState(state: PluginState, msg = ''): void {
 		switch (state) {
 			case PluginState.LOADING:
-				this.setStatusBarText('...');
-				break;
+				this.setStatusBarText('...')
+				break
 			case PluginState.READY:
 				this.updateStatusBarText()
 
 				switch (this.state) {
 					case PluginState.TESTING:
-						this.sendNotification('test passed!');
-						break;
+						this.sendNotification('test passed!')
+						break
 					case PluginState.SYNCHING:
-						this.sendNotification('synchronization completed!');
-						break;
+						this.sendNotification('synchronization completed!')
+						break
 				}
-				break;
+				break
 			case PluginState.TESTING:
-				this.setStatusBarText('...');
-				this.sendNotification('testing..');
-				break;
+				this.setStatusBarText('...')
+				this.sendNotification('testing..')
+				break
 			case PluginState.SYNCHING:
-				this.setStatusBarText('...');
-				this.sendNotification('running..');
-				break;
+				this.setStatusBarText('...')
+				this.sendNotification('running..')
+				break
 			case PluginState.CHECKING:
-				this.setStatusBarText('...');
-				break;
+				this.setStatusBarText('...')
+				break
 			case PluginState.ERROR:
-				this.setStatusBarText('error');
-				this.sendNotification('error ' + msg);
-				break;
+				this.setStatusBarText('error')
+				this.sendNotification('error ' + msg)
+				break
 		}
 
 		this.state = state
@@ -283,11 +283,11 @@ export default class AwsSyncPlugin extends Plugin {
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
 	}
 
 	async saveSettings(): Promise<void> {
-		await this.saveData(this.settings);
+		await this.saveData(this.settings)
 
 		if (!this.settings.enableStatusBar && this.statusBarItem) {
 			this.statusBarItem.remove()
@@ -304,7 +304,7 @@ export default class AwsSyncPlugin extends Plugin {
 	}
 
 	areSettingsValid(): boolean {
-		if (typeof this.settings.bucketName !== "string" || this.settings.bucketName.trim().length == 0) {
+		if (typeof this.settings.bucketName !== 'string' || this.settings.bucketName.trim().length === 0) {
 			return false
 		}
 
@@ -323,7 +323,7 @@ export default class AwsSyncPlugin extends Plugin {
 			return
 		}
 
-		if (this.state == PluginState.SYNCHING) {
+		if (this.state === PluginState.SYNCHING) {
 			return
 		}
 
