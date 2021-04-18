@@ -197,7 +197,7 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 
 		if (this.settings.enableAutoSync) {
-			this.setStatusBarText('...')
+			this.setStatusBarText('waiting..')
 			return
 		}
 

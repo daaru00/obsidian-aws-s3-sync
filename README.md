@@ -2,26 +2,19 @@
 
 This [Obsidian.md](https://obsidian.md/) plugin allow to evaluate synchronize the vault with a remote AWS S3 Bucket.
 
-![sync changes](./doc/gifs/sync.gif)
-
-## Features
-
-- Upload changed files to bucket
-- Delete trashed files from bucket
-- Download new files from bucket
-- Automatic synchronization
+## Usage
 
 This plugin will load a list of remote files from bucket and local files from vault and elaborate sync changes:
 
-![bottom status bar](./doc/imgs/status-bar.png)
+![sync changes](./doc/gifs/sync.gif)
 
-Notifications will appear when sync process run:
+Synchronization process can be triggered from command palette:
 
-![notifications](./doc/imgs/notifications.png))
+![commands](./doc/gifs/sync-commands.gif))
 
 When automatic synchronization is enabled every file change (also create and delete) will trigger the synchronization process:
 
-![automatic changes](./doc/gifs/automatic.gif)
+![automatic changes](./doc/gifs/automatic-sync.gif)
 
 ## Requirements
 
