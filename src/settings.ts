@@ -5,6 +5,7 @@ export default interface AwsSyncPluginSettings {
 	region: string;
 	bucketName: string;
 	bucketPathPrefix: string;
+	bucketEndpoint: string;
 	localFileProtection: boolean;
 	syncDirection: SyncDirection;
 	enableStatusBar: boolean;
@@ -20,6 +21,7 @@ export const DEFAULT_SETTINGS: AwsSyncPluginSettings = {
 	region: 'us-east-1',
 	bucketName: '',
 	bucketPathPrefix: '/%VAULT_NAME%/',
+	bucketEndpoint: '',
 	localFileProtection: true,
 	syncDirection: SyncDirection.FROM_LOCAL,
 	enableStatusBar: true,

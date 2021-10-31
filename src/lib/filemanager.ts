@@ -180,6 +180,7 @@ export interface BucketOption {
   bucketName: string
   pathPrefix: string
   region: string
+  endpoint: string
 }
 
 export default class FileManager {
@@ -200,7 +201,8 @@ export default class FileManager {
   getS3Client(): S3Client {
     return new S3Client({
       credentials: this.profile.getCredentials(),
-      region: this.bucketOpt.region
+      region: this.bucketOpt.region,
+      endpoint: this.bucketOpt.endpoint || this.bucketOpt.endpoint.trim() !== '' ? this.bucketOpt.endpoint : undefined
     })
   }
 

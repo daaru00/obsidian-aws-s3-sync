@@ -111,6 +111,7 @@ export default class AwsSyncPlugin extends Plugin {
 		this.fileManager = new FileManager(this.app.vault, this.getConfiguredProfile(), {
 			bucketName: this.getConfiguredBucketName(),
 			pathPrefix: this.getConfiguredBucketPathPrefix(),
+			endpoint: this.getConfiguredBucketEndpoint(),
 			region: this.settings.region
 		}, {
 			direction: this.settings.syncDirection,
@@ -280,6 +281,10 @@ export default class AwsSyncPlugin extends Plugin {
 		}
 		prefix = prefix.replace('%VAULT_NAME%', this.app.vault.getName())
 		return prefix
+	}
+
+	getConfiguredBucketEndpoint(): string {
+		return this.settings.bucketEndpoint
 	}
 
 	async loadSettings(): Promise<void> {

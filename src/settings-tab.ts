@@ -69,6 +69,17 @@ export default class AwsSyncSettingTab extends PluginSettingTab {
 				}))
 
 		new Setting(containerEl)
+			.setName('AWS S3 Bucket Endpoint')
+			.setDesc('The fully qualified endpoint of the webservice, leave empty to use the AWS S3\'s default')
+			.addText(text => text
+				.setValue(this.plugin.settings.bucketEndpoint)
+				.setPlaceholder(`${this.plugin.settings.bucketName}.s3.${this.plugin.settings.region}.amazonaws.com`)
+				.onChange(async (value) => {
+					this.plugin.settings.bucketEndpoint = value
+					await this.plugin.saveSettings()
+				}))
+
+		new Setting(containerEl)
 			.setName('Test configurations')
 			.setDesc('Will check if credentials are valid and S3 bucket exist')
 			.addButton(button => button
