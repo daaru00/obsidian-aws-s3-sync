@@ -28,6 +28,7 @@ export default class AwsCredentials {
    * Load profiles from credentials file
    */
   async loadProfiles(): Promise<AwsProfile[]> {
+
     // Check if credentials file exist
     if (fs.existsSync(this.filePath) === false) {
       throw 'Cannot find credentials file'
@@ -56,12 +57,18 @@ export default class AwsCredentials {
           profileIteration = null
         }
 
-        // Create new profile and jump to new row
+        // Create new profile and jump to the next row
         profileIteration = new AwsProfile(headerMatch[1].trim())
         continue
       }
 
       // If row does not match header or value skip
+    }
+
+    // Check if last profileIteration is in progress
+    if (profileIteration != null) {
+      profiles.push(profileIteration)
+      profileIteration = null
     }
 
     // Store all founded profiles
