@@ -41,10 +41,10 @@ export default class AwsSyncPlugin extends Plugin {
 
 		this.setState(PluginState.LOADING)
 
-		this.app.vault.on('create', this.onLocalFileChanged.bind(this))
-		this.app.vault.on('modify', this.onLocalFileChanged.bind(this))
-		this.app.vault.on('delete', this.onLocalFileChanged.bind(this))
-		this.app.vault.on('rename', this.onLocalFileChanged.bind(this))
+		this.registerEvent(this.app.vault.on('create', this.onLocalFileChanged.bind(this)))
+		this.registerEvent(this.app.vault.on('modify', this.onLocalFileChanged.bind(this)))
+		this.registerEvent(this.app.vault.on('delete', this.onLocalFileChanged.bind(this)))
+		this.registerEvent(this.app.vault.on('rename', this.onLocalFileChanged.bind(this)))
 
 		await this.initFileManager()
 
