@@ -32,7 +32,7 @@ export default class AwsSyncSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings()
 					}))
 		} else {
-			containerEl.createEl('p', {text: 'Cloud not find any AWS profiles!', cls: ['setting-item', 'aws-s3-sync-no-profile']})
+			containerEl.createEl('p', {text: 'Could not find any AWS profiles!', cls: ['setting-item', 'aws-s3-sync-no-profile']})
 		}
 
     new Setting(containerEl)
